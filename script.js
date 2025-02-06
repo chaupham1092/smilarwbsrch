@@ -9,8 +9,8 @@ document.addEventListener("DOMContentLoaded", function () {
           const API_KEY = config.API_KEY;
           if (!API_KEY) throw new Error("API key is missing");
 
-          // Initialize the app with the API key
-          initApp(API_KEY);
+          // Store API key for later use
+          window.API_KEY = API_KEY;
       })
       .catch(error => {
           console.error("Error loading API key:", error);
@@ -18,22 +18,33 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 });
 
+async function fetchData(url) {
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "X-RapidAPI-Key": window.API_KEY, // Use the stored API key
+                "X-RapidAPI-Host": "similarweb-insights.p.rapidapi.com"
+            }
+        });
+        if (!response.ok) throw new Error("API request failed");
+        return await response.json();
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        return null;
+    }
+}
+
 // Function to clean the domain input (remove protocol and trailing slashes)
 function cleanDomain(domain) {
   return domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
 }
 
-// Function to format the category string (e.g., "computers_electronics_and_technology/search_engines" => "Computers Electronics and Technology / Search Engines")
+// Function to format the category string
 function formatCategory(category) {
-  if (!category) return 'N/A'; // Return 'N/A' if category is missing
-
-  // Split by underscores and slashes, capitalize each word, and join with spaces
-  return category
-    .split(/[_\//]/) // Split by underscores and slashes
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
-    .join(' '); // Join with spaces
+  if (!category) return 'N/A';
+  return category.split(/[_\/]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
-
 
 // Function to display data in a user-friendly format
 function displayData(elementId, data) {
@@ -52,10 +63,7 @@ function displayData(elementId, data) {
       break;
 
     case 'trafficData':
-      content = `
-        <h3>This Month Traffic</h3>
-        <p><strong>Visits:</strong> ${data?.Visits?.toLocaleString() || 'N/A'}</p>
-      `;
+      content = `<h3>This Month Traffic</h3><p><strong>Visits:</strong> ${data?.Visits?.toLocaleString() || 'N/A'}</p>`;
       break;
 
     case 'rankData':
@@ -68,55 +76,34 @@ function displayData(elementId, data) {
       break;
 
     case 'similarSitesData':
-      if (Array.isArray(data) && data.length > 0) {
-        content = `
-          <h3>Similar Sites</h3>
-          <ul>
-            ${data.map(site => `
-              <li>
-                <strong>${site.Domain}</strong><br>
-                <em>${site.Title}</em><br>
-                <span>Global Rank: ${site.GlobalRank}</span><br>
-                <span>Visits: ${site.Visits?.toLocaleString() || 'N/A'}</span>
-              </li>
-            `).join('')}
-          </ul>
-        `;
-      } else {
-        content = `
-          <h3>Similar Sites</h3>
-          <p>No similar sites data available.</p>
-        `;
-      }
+      content = Array.isArray(data) && data.length > 0
+        ? `<h3>Similar Sites</h3><ul>${data.map(site => `<li><strong>${site.Domain}</strong><br><em>${site.Title}</em><br><span>Global Rank: ${site.GlobalRank}</span><br><span>Visits: ${site.Visits?.toLocaleString() || 'N/A'}</span></li>`).join('')}</ul>`
+        : `<h3>Similar Sites</h3><p>No similar sites data available.</p>`;
       break;
 
     default:
       content = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
   }
-
   element.innerHTML = content;
 }
 
 // Function to add a delay between requests
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Event listener for the form submission
+// Event listener for form submission
 document.getElementById('domainForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const domain = cleanDomain(document.getElementById('domainInput').value.trim());
 
-  // Validate the domain input
   if (!domain) {
     alert('Please enter a domain.');
     return;
   }
 
-  // Show loading spinner
   document.getElementById('loading').style.display = 'flex';
   document.getElementById('results').style.display = 'none';
 
   try {
-    // Define the API endpoints
     const endpoints = [
       `https://similarweb-insights.p.rapidapi.com/website-details?domain=${domain}`,
       `https://similarweb-insights.p.rapidapi.com/traffic?domain=${domain}`,
@@ -124,35 +111,25 @@ document.getElementById('domainForm').addEventListener('submit', async (e) => {
       `https://similarweb-insights.p.rapidapi.com/similar-sites?domain=${domain}`,
     ];
 
-    // Fetch data from each endpoint with a delay between requests
     const results = [];
     for (const endpoint of endpoints) {
       const data = await fetchData(endpoint);
       results.push(data);
-      await delay(1000); // Add a 1-second delay between requests
+      await delay(1000);
     }
 
-    // Destructure the results
     const [websiteDetailsData, trafficData, rankData, similarSitesData] = results;
-
-    // Update the results heading
     document.getElementById('resultsHeading').textContent = `Results for ${domain}`;
-
-    // Display the data in the respective sections
     displayData('websiteDetailsData', websiteDetailsData);
     displayData('trafficData', trafficData);
     displayData('rankData', rankData);
-    displayData('similarSitesData', similarSitesData.SimilarSites || []); // Handle SimilarSites array
+    displayData('similarSitesData', similarSitesData?.SimilarSites || []);
 
-    // Show results and hide loading spinner
     document.getElementById('loading').style.display = 'none';
     document.getElementById('results').style.display = 'block';
   } catch (error) {
-    // Handle errors
     console.error('Error fetching data:', error);
     alert(error.message || 'Failed to fetch data. Please try again.');
-
-    // Hide loading spinner
     document.getElementById('loading').style.display = 'none';
   }
 });
