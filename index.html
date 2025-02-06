@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SimilarWeb Insights</title>
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- GTM Code (directly added in the head) -->
+  <script>
+    (function(w, d, s, l, i) {
+    w[l] = w[l] || [];
+    w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+    var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != 'dataLayer' ? '&l=' + l : '';
+    j.async = true;
+    j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+    f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-NFZW3JVK');
+</script>
+
+  <!-- <noscript> tag for users without JavaScript -->
+  <noscript>
+      <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NFZW3JVK" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+
+  
+</head>
+<body>
+  <div class="container">
+    <h1>Similarweb Free Search</h1>
+    <form id="domainForm">
+      <input type="text" id="domainInput" placeholder="Enter a domain (e.g., teamtrees.org)" required>
+      <button type="submit">Get Insights</button>
+    </form>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading-spinner" style="display: none;">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results">
+      <h2 id="resultsHeading">Results</h2>
+
+      <!-- Preloaded Headlines -->
+      <div id="websiteDetailsData" class="result-section">
+        <h3>Website Details</h3>
+        <p>Enter a domain to view website details.</p>
+      </div>
+
+      <div id="trafficData" class="result-section">
+        <h3>This Month Traffic</h3>
+        <p>Enter a domain to view traffic data.</p>
+      </div>
+
+      <div id="rankData" class="result-section">
+        <h3>Rank Data</h3>
+        <p>Enter a domain to view rank data.</p>
+      </div>
+
+      <div id="similarSitesData" class="result-section">
+        <h3>Similar Sites</h3>
+        <p>Enter a domain to view similar sites.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
