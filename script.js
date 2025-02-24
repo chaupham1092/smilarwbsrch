@@ -77,9 +77,17 @@ function displayData(elementId, data) {
 
     case 'similarSitesData':
       content = Array.isArray(data) && data.length > 0
-        ? `<h3>Similar Sites</h3><ul>${data.map(site => `<li><strong>${site.Domain}</strong><br><em>${site.Title}</em><br><span>Global Rank: ${site.GlobalRank}</span><br><span>Visits: ${site.Visits?.toLocaleString() || 'N/A'}</span></li>`).join('')}</ul>`
+        ? `<h3>Similar Sites</h3><ul>${data.map(site => `
+          <li>
+            <strong><a href="https://${site.Domain}" target="_blank" rel="noopener noreferrer">${site.Domain}</a></strong><br>
+            <em>${site.Title}</em><br>
+            <span>Global Rank: ${site.GlobalRank}</span><br>
+            <span>Visits: ${site.Visits?.toLocaleString() || 'N/A'}</span>
+          </li>
+        `).join('')}</ul>`
         : `<h3>Similar Sites</h3><p>No similar sites data available.</p>`;
       break;
+
 
     default:
       content = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
